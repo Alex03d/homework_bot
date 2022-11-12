@@ -1,11 +1,23 @@
-...
+import logging
+import os
+import time
+import logging
+from pprint import pprint
+
+import requests
+import telegram
+
+from telegram import ReplyKeyboardMarkup, Bot
+from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+
+from dotenv import load_dotenv
 
 load_dotenv()
 
 
-PRACTICUM_TOKEN = ...
-TELEGRAM_TOKEN = ...
-TELEGRAM_CHAT_ID = ...
+PRACTICUM_TOKEN = 'y0_AgAAAAAJvI3SAAYckQAAAADTrQmhyh8tnQ1TQ8aZXZrLSzHFXn0NBQQ'
+TELEGRAM_TOKEN = os.getenv('TOKEN')
+TELEGRAM_CHAT_ID = 115109068
 
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
@@ -20,14 +32,17 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    ...
+    bot = Bot(token=TELEGRAM_TOKEN)
+    chat_id = TELEGRAM_CHAT_ID
+    bot.send_message(chat_id, message)
 
 
 def get_api_answer(current_timestamp):
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
 
-    ...
+    homework_statuses = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    return pprint(homework_statuses.json())
 
 
 def check_response(response):
@@ -49,7 +64,13 @@ def parse_status(homework):
 
 
 def check_tokens():
-    ...
+    logger = logging.getLogger(__name__)
+    if (PRACTICUM_TOKEN is None
+            or TELEGRAM_TOKEN is None
+            or TELEGRAM_CHAT_ID is None):
+        logger.critical('Отсутствие обязательных переменных')
+        return False
+    return True
 
 
 def main():
@@ -59,7 +80,6 @@ def main():
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-
     ...
 
     while True:
