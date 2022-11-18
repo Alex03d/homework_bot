@@ -44,8 +44,9 @@ HOMEWORK_STATUSES = {
 
 def send_message(bot, message):
     """
-    Функция send_message() отправляет сообщение в Telegram чат, определяемый
-    переменной окружения TELEGRAM_CHAT_ID. Принимает на вход два параметра:
+    Функция отправляет сообщение в Telegram чат.
+    Чат определяется переменной окружения TELEGRAM_CHAT_ID.
+    Принимает на вход два параметра:
     экземпляр класса Bot и строку с текстом сообщения.
     """
     bot = Bot(token=TELEGRAM_TOKEN)
@@ -53,25 +54,25 @@ def send_message(bot, message):
     try:
         bot.send_message(chat_id, message)
     except Exception as error:
-        logger.error(f'Сбой при отправке сообщения в Telegram. Ошибка - {error}')
+        logger.error(f'Сбой при отправке сообщения в Telegram. '
+                     f'Ошибка - {error}')
     else:
         logger.info('Удачная отправка сообщения в Telegram.')
 
 
 def get_api_answer(current_timestamp):
     """
-    Функция get_api_answer() делает запрос к единственному эндпоинту
-    API-сервиса. В качестве параметра функция получает временную метку.
+    Функция делает запрос к единственному эндпоинту.
+    В качестве параметра функция получает временную метку.
     В случае успешного запроса должна вернуть ответ API, преобразовав
     его из формата JSON к типам данных Python.
     """
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    response = requests.get(
-            ENDPOINT,
-            headers=HEADERS,
-            params=params
-        ).json()
+    response = requests.get(ENDPOINT,
+                            headers=HEADERS,
+                            params=params
+                            ).json()
     if not response:
         message = 'Ошибка соединения с сервером'
         logger.error(message)
@@ -81,7 +82,7 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """
-    Функция check_response() проверяет ответ API на корректность.
+    Функция проверяет ответ API на корректность.
     В качестве параметра функция получает ответ API, приведенный
     к типам данных Python. Если ответ API соответствует ожиданиям,
     то функция должна вернуть список домашних работ (он может быть
@@ -105,11 +106,11 @@ def check_response(response):
 
 def parse_status(homework):
     """
-    Функция parse_status() извлекает из информации о конкретной
-    домашней работе статус этой работы. В качестве параметра функция
-    получает только один элемент из списка домашних работ. В случае
-    успеха, функция возвращает подготовленную для отправки в Telegram
-    строку, содержащую один из вердиктов словаря HOMEWORK_STATUSES.
+    Функция извлекает из информации о конкретной домашней работе статус.
+    В качестве параметра функция получает только один элемент из списка
+    домашних работ. В случае успеха, функция возвращает подготовленную
+    для отправки в Telegram строку, содержащую один из вердиктов словаря
+    HOMEWORK_STATUSES.
     """
     if 'homework_name' not in homework[0]:
         message = 'Нет данных о домашней работе'
@@ -131,9 +132,9 @@ def parse_status(homework):
 
 def check_tokens():
     """
-    Функция check_tokens() проверяет доступность переменных окружения,
-    которые необходимы для работы программы. Если отсутствует хотя бы
-    одна переменная окружения — функция должна вернуть False, иначе — True.
+    Функция проверяет доступность переменных окружения.
+    Если отсутствует хотя бы одна переменная окружения —
+    функция должна вернуть False, иначе — True.
     """
     if PRACTICUM_TOKEN is None:
         message = 'Отсутствие PRACTICUM_TOKEN'
@@ -162,8 +163,8 @@ def main():
         pass
     else:
         raise ValueError(
-            f'отсутствие обязательных переменных окружения '
-            f'во время запуска бота ')
+            'отсутствие обязательных переменных окружения '
+            'во время запуска бота ')
         sys.exit()
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
