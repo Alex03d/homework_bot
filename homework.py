@@ -18,7 +18,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(stream=sys.stdout)
-# handler = RotatingFileHandler('my_logger.log', maxBytes=50000000, backupCount=5)
 logger.addHandler(handler)
 
 formatter = logging.Formatter(
