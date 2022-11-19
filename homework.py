@@ -163,7 +163,7 @@ def check_tokens():
     """
     list_of_tokens = (TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID)
     for token in list_of_tokens:
-        if str(token) is None:
+        if token is None:
             message = f'Отсутствие {token}'
             logger.critical(message)
             raise TypeError(message)
