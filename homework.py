@@ -159,7 +159,7 @@ def check_tokens():
     Если отсутствует хотя бы одна переменная окружения —
     функция должна вернуть False, иначе — True.
     """
-    if TELEGRAM_TOKEN is None:
+    if not TELEGRAM_TOKEN:
         message = 'Отсутствие TELEGRAM_TOKEN'
         logger.critical(message)
         raise TypeError(message)
