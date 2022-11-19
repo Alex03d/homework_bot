@@ -38,9 +38,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    """
-    Отправка любых сообщений в ТГ чат админа: обновления домашки, ошибки.
-    """
+    """Отправка любых сообщений в ТГ чат: обновления домашки, ошибки."""
     bot = Bot(token=TELEGRAM_TOKEN)
     chat_id = TELEGRAM_CHAT_ID
     try:
@@ -53,9 +51,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    """
-    Запрос к единственному эндпоинту и проверка доступности сервера.
-    """
+    """Запрос к единственному эндпоинту и проверка доступности сервера."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     response = requests.get(ENDPOINT,
@@ -74,9 +70,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """
-    Проверка ответа API на корректность.
-    """
+    """Проверка ответа API на корректность."""
     if not response:
         message = 'Сервер вернул пустой массив данных'
         logger.error(message)
@@ -94,9 +88,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """
-    Извлечение статуса домашки из информации о конкретной домашней работе.
-    """
+    """Извлечение статуса домашки."""
     if 'homework_name' not in homework:
         message = 'Нет данных о домашней работе'
         logger.error(message)
@@ -116,9 +108,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """
-    Проверка доступности токенов.
-    """
+    """Проверка доступности токенов."""
     list_of_tokens = [TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID]
     for token in list_of_tokens:
         if not token:
