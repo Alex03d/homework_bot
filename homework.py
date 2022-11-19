@@ -110,13 +110,12 @@ def parse_status(homework):
 def check_tokens():
     """Проверка доступности токенов."""
     list_of_tokens = [TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID]
-    for token in list_of_tokens:
-        if token is None:
-            message = f'Отсутствие {token}'
-            logger.critical(message)
-            raise TypeError(message)
-            return False
-        return True
+    if None in list_of_tokens:
+        message = f'Отсутствие одного или нескольких токенов'
+        logger.critical(message)
+        raise TypeError(message)
+        return False
+    return True
 
 
 def main():
