@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import logging
-from http import HTTPStatus
+# from http import HTTPStatus
 
 import requests
 import telegram
