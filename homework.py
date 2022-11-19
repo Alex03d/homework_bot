@@ -32,7 +32,7 @@ PRACTICUM_TOKEN = 'y0_AgAAAAAJvI3SAAYckQAAAADTrQmhyh8tnQ1TQ8aZXZrLSzHFXn0NBQQ'
 TELEGRAM_TOKEN = os.getenv('TOKEN')
 TELEGRAM_CHAT_ID = 115109068
 
-RETRY_TIME = 600
+RETRY_TIME = 6
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
@@ -107,7 +107,7 @@ def check_response(response):
                    'ожидается список домашних работ')
         logger.error(message)
         raise Exception(message)
-    return response.get('homeworks')
+    return response.get('homeworks')[0]
 
 
 def parse_status(homework):
@@ -118,16 +118,16 @@ def parse_status(homework):
     для отправки в Telegram строку, содержащую один из вердиктов словаря
     HOMEWORK_STATUSES.
     """
-    if 'homework_name' not in homework[0]:
+    if 'homework_name' not in homework:
         message = 'Нет данных о домашней работе'
         logger.error(message)
         raise KeyError(message)
-    if 'status' not in homework[0]:
+    if 'status' not in homework:
         message = 'Не данных о домашней работе'
         logger.error(message)
         raise KeyError(message)
-    homework_name = homework[0]['homework_name']
-    homework_status = homework[0]['status']
+    homework_name = homework['homework_name']
+    homework_status = homework['status']
     if homework_status not in HOMEWORK_STATUSES:
         message = 'Неизвестный статус'
         logger.error(message)
@@ -200,6 +200,7 @@ def main():
             response = get_api_answer(current_timestamp)
             if not response['homeworks']:
                 current_timestamp = response['current_date']
+                logger.info('Сработал time.sleep при пустом списке')
                 time.sleep(RETRY_TIME)
             else:
                 homework = check_response(response)
