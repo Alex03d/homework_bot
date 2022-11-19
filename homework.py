@@ -161,16 +161,32 @@ def check_tokens():
     Если отсутствует хотя бы одна переменная окружения —
     функция должна вернуть False, иначе — True.
     """
-    list_of_tokens = [TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID]
-    for token in list_of_tokens:
-        if not token:
-            message = f'Отсутствие {token}'
-            logger.critical(message)
-            raise TypeError(message)
-            return False
-        else:
-            pass
-    return True
+    if not TELEGRAM_TOKEN:
+        message = f'Отсутствие {TELEGRAM_TOKEN}'
+        logger.critical(message)
+        raise TypeError(message)
+        return False
+    if not PRACTICUM_TOKEN:
+        message = f'Отсутствие {PRACTICUM_TOKEN}'
+        logger.critical(message)
+        raise TypeError(message)
+        return False
+    if not TELEGRAM_CHAT_ID:
+        message = f'Отсутствие {TELEGRAM_CHAT_ID}'
+        logger.critical(message)
+        raise TypeError(message)
+        return False
+    True
+    # list_of_tokens = [TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID]
+    # for token in list_of_tokens:
+    #     if not token:
+    #         message = f'Отсутствие {token}'
+    #         logger.critical(message)
+    #         raise TypeError(message)
+    #         return False
+    #     else:
+    #         pass
+    # return True
 
 
 def main():
