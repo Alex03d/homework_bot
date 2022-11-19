@@ -98,7 +98,7 @@ def check_response(response):
         message = 'Сервер вернул пустой массив данных'
         logger.error(message)
         raise Exception(message)
-    if isinstance(response, tuple):
+    if isinstance(response, list):
         # or isinstance(response, tuple)
         # # or isinstance(response, set)
         message = 'отсутствие ожидаемых ключей в ответе API: dict'
@@ -161,18 +161,9 @@ def check_tokens():
     Если отсутствует хотя бы одна переменная окружения —
     функция должна вернуть False, иначе — True.
     """
-    if not TELEGRAM_TOKEN:
-        message = 'Отсутствие TELEGRAM_TOKEN'
-        logger.critical(message)
-        raise TypeError(message)
-        return False
-    elif PRACTICUM_TOKEN is None:
-        message = 'Отсутствие PRACTICUM_TOKEN'
-        logger.critical(message)
-        raise TypeError(message)
-        return False
-    elif TELEGRAM_CHAT_ID is None:
-        message = 'Отсутствие TELEGRAM_CHAT_ID'
+    list_of_tokens = (TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID)
+    if None in list_of_tokens:
+        message = f'Отсутствие {None}'
         logger.critical(message)
         raise TypeError(message)
         return False
