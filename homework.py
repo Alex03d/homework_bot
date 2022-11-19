@@ -99,8 +99,8 @@ def check_response(response):
         logger.error(message)
         raise Exception(message)
     if (isinstance(response, list)
-            or isinstance(response, tuple)
-            or isinstance(response, set)):
+            or isinstance(response, tuple)):
+        # or isinstance(response, set)
         message = 'отсутствие ожидаемых ключей в ответе API: dict'
         logger.error(message)
         raise Exception(message)
