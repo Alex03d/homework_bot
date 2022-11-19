@@ -32,7 +32,7 @@ PRACTICUM_TOKEN = 'y0_AgAAAAAJvI3SAAYckQAAAADTrQmhyh8tnQ1TQ8aZXZrLSzHFXn0NBQQ'
 TELEGRAM_TOKEN = os.getenv('TOKEN')
 TELEGRAM_CHAT_ID = 115109068
 
-RETRY_TIME = 600
+RETRY_TIME = 6
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
@@ -68,30 +68,22 @@ def get_api_answer(current_timestamp):
     В случае успешного запроса должна вернуть ответ API, преобразовав
     его из формата JSON к типам данных Python.
     """
-    # timestamp = current_timestamp or int(time.time())
-    # params = {'from_date': timestamp}
-    # response = requests.get(ENDPOINT,
-    #                         headers=HEADERS,
-    #                         params=params
-    #                         ).json()
-    # if not response:
-    #     message = 'Ошибка соединения с сервером'
-    #     logger.error(message)
-    #     raise ConnectionError(message)
-    # return response
     timestamp = current_timestamp or int(time.time())
+    # timestamp = 0
     params = {'from_date': timestamp}
-    response = requests.get(ENDPOINT, headers=HEADERS, params=params)
-    if response.status_code == HTTPStatus.OK:
-        return response.json()
-    elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
-        message = 'Ошибка 500 сервера'
+    response = requests.get(ENDPOINT,
+                            headers=HEADERS,
+                            params=params
+                            )
+    if not response:
+        message = 'Ошибка соединения с сервером'
         logger.error(message)
         raise ConnectionError(message)
-    else:
-        message = 'Не удалось соединиться с сервером'
+    if response.status_code != 200:
+        message = 'API возвращает код, отличный от 200'
         logger.error(message)
-        raise ConnectionError(message)
+        raise Exception(message)
+    return response.json()
 
 
 def check_response(response):
@@ -102,41 +94,20 @@ def check_response(response):
     то функция должна вернуть список домашних работ (он может быть
     и пустым), доступный в ответе API по ключу 'homeworks'.
     """
-    # if not response:
-    #     message = 'Сервер вернул пустой массив данных'
-    #     logger.error(message)
-    #     raise Exception(message)
-    # if not isinstance(response, dict):
-    #     message = 'отсутствие ожидаемых ключей в ответе API: dict'
-    #     logger.error(message)
-    #     raise Exception(message)
-    # if not isinstance(response.get('homeworks'), list):
-    #     message = ('отсутствие ожидаемых ключей в ответе API: '
-    #                'ожидается список домашних работ')
-    #     logger.error(message)
-    #     raise Exception(message)
-    # return response.get('homeworks')
     if not response:
         message = 'Сервер вернул пустой массив данных'
         logger.error(message)
         raise Exception(message)
     if not isinstance(response, dict):
-        message = 'Тип данных не соответствует ожидаемому'
+        message = 'отсутствие ожидаемых ключей в ответе API: dict'
         logger.error(message)
-        raise TypeError(message)
-    if 'code' in response:
-        message = 'На сервер переданы некорректные данные'
-        logger.error(message)
-        raise KeyError(message)
-    if 'homeworks' not in response or 'current_date' not in response:
-        message = 'В ответе нет необходимых данных'
-        logger.error(message)
-        raise KeyError(message)
+        raise Exception(message)
     if not isinstance(response.get('homeworks'), list):
-        message = 'Сервер возвращает некорректные данные'
+        message = ('отсутствие ожидаемых ключей в ответе API: '
+                   'ожидается список домашних работ')
         logger.error(message)
-        raise TypeError(message)
-    return response['homeworks']
+        raise Exception(message)
+    return response.get('homeworks')
 
 
 def parse_status(homework):
@@ -188,22 +159,23 @@ def check_tokens():
     Если отсутствует хотя бы одна переменная окружения —
     функция должна вернуть False, иначе — True.
     """
-    if PRACTICUM_TOKEN is None:
-        message = 'Отсутствие PRACTICUM_TOKEN'
-        logger.critical(message)
-        raise TypeError(message)
-        return False
     if TELEGRAM_TOKEN is None:
         message = 'Отсутствие TELEGRAM_TOKEN'
         logger.critical(message)
         raise TypeError(message)
         return False
-    if TELEGRAM_CHAT_ID is None:
+    elif PRACTICUM_TOKEN is None:
+        message = 'Отсутствие PRACTICUM_TOKEN'
+        logger.critical(message)
+        raise TypeError(message)
+        return False
+    elif TELEGRAM_CHAT_ID is None:
         message = 'Отсутствие TELEGRAM_CHAT_ID'
         logger.critical(message)
         raise TypeError(message)
         return False
-    return True
+    else:
+        return True
 
 
 def main():
@@ -221,6 +193,7 @@ def main():
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    # current_timestamp = 0
 
     while True:
         try:
