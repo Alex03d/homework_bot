@@ -75,7 +75,7 @@ def check_response(response):
         message = 'Сервер вернул пустой массив данных'
         logger.error(message)
         raise Exception(message)
-    if isinstance(response, list):
+    if isinstance(response, tuple):
         message = 'отсутствие ожидаемых ключей в ответе API: dict'
         logger.error(message)
         raise Exception(message)
@@ -110,13 +110,6 @@ def parse_status(homework):
 def check_tokens():
     """Проверка доступности токенов."""
     return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
-    # list_of_tokens = [TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID]
-    # if None in list_of_tokens:
-    #     message = f'Отсутствие одного или нескольких токенов'
-    #     logger.critical(message)
-    #     raise TypeError(message)
-    #     return False
-    # return True
 
 
 def main():
@@ -127,13 +120,6 @@ def main():
     if not check_tokens():
         logger.error('Отсутствие переменных окружений')
         return sys.exit('Неполадки с переменными окружения')
-    # if check_tokens() is True:
-    #     pass
-    # else:
-    #     raise ValueError(
-    #         'отсутствие обязательных переменных окружения '
-    #         'во время запуска бота ')
-    #     sys.exit()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     while True:
