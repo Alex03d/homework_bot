@@ -162,12 +162,12 @@ def check_tokens():
     функция должна вернуть False, иначе — True.
     """
     list_of_tokens = (TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID)
-    if None in list_of_tokens:
-        message = f'Отсутствие {None}'
-        logger.critical(message)
-        raise TypeError(message)
-        return False
-    else:
+    for token in list_of_tokens:
+        if token is str:
+            message = f'Отсутствие {token}'
+            logger.critical(message)
+            raise TypeError(message)
+            return False
         return True
 
 
