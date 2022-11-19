@@ -109,13 +109,14 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверка доступности токенов."""
-    list_of_tokens = [TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID]
-    if None in list_of_tokens:
-        message = f'Отсутствие одного или нескольких токенов'
-        logger.critical(message)
-        raise TypeError(message)
-        return False
-    return True
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+    # list_of_tokens = [TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID]
+    # if None in list_of_tokens:
+    #     message = f'Отсутствие одного или нескольких токенов'
+    #     logger.critical(message)
+    #     raise TypeError(message)
+    #     return False
+    # return True
 
 
 def main():
@@ -123,13 +124,16 @@ def main():
     Описана основная логика работы программы.
     Все остальные функции должны запускаться отсюда.
     """
-    if check_tokens() is True:
-        pass
-    else:
-        raise ValueError(
-            'отсутствие обязательных переменных окружения '
-            'во время запуска бота ')
-        sys.exit()
+    if not check_tokens():
+        logger.error('Отсутствие переменных окружений')
+        return sys.exit('Неполадки с переменными окружения')
+    # if check_tokens() is True:
+    #     pass
+    # else:
+    #     raise ValueError(
+    #         'отсутствие обязательных переменных окружения '
+    #         'во время запуска бота ')
+    #     sys.exit()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     while True:
