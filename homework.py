@@ -98,13 +98,13 @@ def check_response(response):
         message = 'Сервер вернул пустой массив данных'
         logger.error(message)
         raise Exception(message)
-    if isinstance(response, set):
+    if not isinstance(response, list):
         # or isinstance(response, tuple)
         # # or isinstance(response, set)
         message = 'отсутствие ожидаемых ключей в ответе API: dict'
         logger.error(message)
         raise Exception(message)
-    if not isinstance(response.get('homeworks'), list):
+    if not isinstance(response['homeworks'], list):
         message = ('отсутствие ожидаемых ключей в ответе API: '
                    'ожидается список домашних работ')
         logger.error(message)
