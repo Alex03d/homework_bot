@@ -1,12 +1,15 @@
+import json
 import logging
 import os
 import sys
 import time
+from http import HTTPStatus
 
 import requests
 import telegram
 from dotenv import load_dotenv
 from telegram import Bot
+from endpoint import ENDPOINT
 
 
 logger = logging.getLogger(__name__)
@@ -22,15 +25,14 @@ handler.setFormatter(formatter)
 
 load_dotenv()
 
-PRACTICUM_TOKEN = 'y0_AgAAAAAJvI3SAAYckQAAAADTrQmhyh8tnQ1TQ8aZXZrLSzHFXn0NBQQ'
+PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TOKEN')
 TELEGRAM_CHAT_ID = 115109068
 
-RETRY_TIME = 6
-ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
+TELEGRAM_RETRY_TIME = 600
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
-HOMEWORK_STATUSES = {
+HOMEWORK_VERDICTS = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
@@ -58,19 +60,26 @@ def get_api_answer(current_timestamp):
                             headers=HEADERS,
                             params=params
                             )
-    if not response:
-        message = 'Ошибка соединения с сервером'
+    if response.status_code == HTTPStatus.OK:
+        try:
+            response.json()
+        except json.decoder.JSONDecodeError:
+            message = 'Ответ API не преобразовалcя в JSON'
+            logger.error(message)
+    elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
+        message = 'Ошибка 500 сервера'
         logger.error(message)
         raise ConnectionError(message)
-    if response.status_code != 200:
-        message = 'API возвращает код, отличный от 200'
+    else:
+        message = 'Не удалось соединиться с сервером'
         logger.error(message)
-        raise Exception(message)
-    return response.json()
+        raise ConnectionError(message)
 
 
 def check_response(response):
     """Проверка ответа API на корректность."""
+    message = 'Начало проверки ответа сервера'
+    logger.debug(message)
     if not response:
         message = 'Сервер вернул пустой массив данных'
         logger.error(message)
@@ -97,13 +106,21 @@ def parse_status(homework):
         message = 'Не данных о домашней работе'
         logger.error(message)
         raise KeyError(message)
+    if not homework['homework_name'] or homework['homework_name'] is None:
+        message = 'Не данных о названии домашней работы'
+        logger.error(message)
+        raise KeyError(message)
+    if not homework['status'] or homework['status'] is None:
+        message = 'Не данных о статусе домашней работы'
+        logger.error(message)
+        raise KeyError(message)
     homework_name = homework['homework_name']
     homework_status = homework['status']
-    if homework_status not in HOMEWORK_STATUSES:
+    if homework_status not in HOMEWORK_VERDICTS:
         message = 'Неизвестный статус'
         logger.error(message)
         raise Exception(message)
-    verdict = HOMEWORK_STATUSES[f'{homework_status}']
+    verdict = HOMEWORK_VERDICTS[f'{homework_status}']
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
@@ -128,22 +145,22 @@ def main():
             if not response['homeworks']:
                 current_timestamp = response['current_date']
                 logger.info('Сработал time.sleep при пустом списке')
-                time.sleep(RETRY_TIME)
+                time.sleep(TELEGRAM_RETRY_TIME)
             else:
                 homework = check_response(response)
                 message = parse_status(homework)
                 send_message(bot, message)
                 logger.info('Сообщение успешно отправлено')
-                time.sleep(RETRY_TIME)
+                time.sleep(TELEGRAM_RETRY_TIME)
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             send_message(bot, message)
-            time.sleep(RETRY_TIME)
+            time.sleep(TELEGRAM_RETRY_TIME)
         else:
             logger.info('Программа работает без сбоев')
         finally:
-            time.sleep(RETRY_TIME)
+            time.sleep(TELEGRAM_RETRY_TIME)
 
 
 if __name__ == '__main__':
