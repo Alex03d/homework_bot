@@ -66,6 +66,7 @@ def get_api_answer(current_timestamp):
         except json.decoder.JSONDecodeError:
             message = 'Ответ API не преобразовалcя в JSON'
             logger.error(message)
+        return response.json()
     elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         message = 'Ошибка 500 сервера'
         logger.error(message)
