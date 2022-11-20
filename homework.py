@@ -8,7 +8,7 @@ from http import HTTPStatus
 import requests
 import telegram
 from dotenv import load_dotenv
-from telegram import Bot
+from telegram import Bot, TelegramError
 from endpoint import ENDPOINT
 
 
@@ -27,7 +27,7 @@ load_dotenv()
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TOKEN')
-TELEGRAM_CHAT_ID = 115109068
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 TELEGRAM_RETRY_TIME = 600
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
@@ -44,8 +44,10 @@ def send_message(bot, message):
     bot = Bot(token=TELEGRAM_TOKEN)
     chat_id = TELEGRAM_CHAT_ID
     try:
+        message = 'Начало отправки сообщения в Телеграм'
+        logger.debug(message)
         bot.send_message(chat_id, message)
-    except Exception as error:
+    except TelegramError as error:
         logger.error(f'Сбой при отправке сообщения в Telegram. '
                      f'Ошибка - {error}')
     else:
@@ -67,10 +69,6 @@ def get_api_answer(current_timestamp):
             message = 'Ответ API не преобразовалcя в JSON'
             logger.error(message)
         return response.json()
-    elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
-        message = 'Ошибка 500 сервера'
-        logger.error(message)
-        raise ConnectionError(message)
     else:
         message = 'Не удалось соединиться с сервером'
         logger.error(message)
@@ -99,12 +97,8 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлечение статуса домашки."""
-    if 'homework_name' not in homework:
+    if 'homework_name' or 'status' not in homework:
         message = 'Нет данных о домашней работе'
-        logger.error(message)
-        raise KeyError(message)
-    if 'status' not in homework:
-        message = 'Не данных о домашней работе'
         logger.error(message)
         raise KeyError(message)
     if not homework['homework_name'] or homework['homework_name'] is None:
@@ -140,6 +134,7 @@ def main():
         return sys.exit('Неполадки с переменными окружения')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    statuses = ['']
     while True:
         try:
             response = get_api_answer(current_timestamp)
@@ -149,10 +144,13 @@ def main():
                 time.sleep(TELEGRAM_RETRY_TIME)
             else:
                 homework = check_response(response)
-                message = parse_status(homework)
-                send_message(bot, message)
-                logger.info('Сообщение успешно отправлено')
-                time.sleep(TELEGRAM_RETRY_TIME)
+                status = str(homework.get('status'))
+                if status != statuses:
+                    message = parse_status(homework)
+                    send_message(bot, message)
+                    logger.info('Сообщение успешно отправлено')
+                    statuses = status
+                    time.sleep(TELEGRAM_RETRY_TIME)
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
